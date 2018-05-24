@@ -1,11 +1,10 @@
 package pages;
 
 import org.junit.Assert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import steps.BaseStep;
@@ -15,22 +14,32 @@ import java.util.concurrent.TimeUnit;
 
 public class DomClicPage extends BasePage {
 
-    WebDriverWait wait = new WebDriverWait(BaseStep.getDriver(), 5);
+    WebDriverWait wait = new WebDriverWait(BaseStep.getDriver(), 15);
 
-    @FindBy(xpath = ".//div[@class = 'dcCalc_frame']//div[contains(text(), 'Цель кредита')]/following-sibling::div//input[@class = 'dcCalc_textfield__input']")
+    @FindBy(xpath = "//div[@class = 'dcCalc_frame']//div[contains(text(),'Цель кредита')]/following-sibling::div//input[@class = 'dcCalc_textfield__input']")
     public WebElement itemButton; // Кнопка выбора опций цели кредита
 
-    @FindBy(xpath = ".//div[@class = 'Select-menu']/div[@role = 'option']")
-    public List<WebElement> itemOption; // Опции цели кредита
-    //ссылки на поля заполнения
-    //input[contains(@class,'dcCalc')]
-    @FindBy(xpath = " //input[contains(@class,'dcCalc')]")
-    public List<WebElement> fields;
+    @FindBy(id = "estateCost")
+    public WebElement estateCost;
 
-    public void sendField(int i, String value) {
+    @FindBy(id = "initialFee")
+    public WebElement initialFee;
 
-        fields.get(i).click();
-        fields.get(i).clear();
+    @FindBy(id = "creditTerm")
+    public WebElement creditTerm;
+
+
+    public void sendField(WebElement element, String value) {
+
+        new WebDriverWait(BaseStep.getDriver(), 10).until((ExpectedCondition<Boolean>) driver -> {
+            element.clear();
+            element.sendKeys(value);
+            new Actions(BaseStep.getDriver()).sendKeys(Keys.TAB).perform();
+            String actualResult = element.getAttribute("value").replaceAll(" ", "");
+            return actualResult.contains(value);
+        });
+
+     /*   fields.get(i).clear();
 
         fields.get(i).sendKeys(value);
         value = filtersField(i, value);
@@ -41,16 +50,53 @@ public class DomClicPage extends BasePage {
         String actualValue = fields.get(i).getAttribute("value");
 
         BaseStep.getDriver().manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-        Assert.assertTrue(String.format("Не так заполнено поле [%s] || [%s]", value, actualValue), value.contains(actualValue));
+        Assert.assertTrue(String.format("Не так заполнено поле [%s] || [%s]", value, actualValue), value.contains(actualValue));*/
     }
 
-    public void sendCheck(int i, String value) {
-        wait.until(ExpectedConditions.visibilityOf(fields.get(i)));
-        if (value.equals("true")) fields.get(i)
-                .findElement(By.xpath("./..")).click();
+    public void sendCheck(String value) {
+        WebElement checkBox = BaseStep.getDriver().findElement(By.xpath("//*[text()='"+value
+                +"']//ancestor::div[@class = 'dcCalc_switch-desktop']/div[2]"));
+        ((JavascriptExecutor) BaseStep.getDriver()).executeScript("arguments[0].scrollIntoView(false);", checkBox);
+        switch (value) {
+            case "true":
+                if (checkBox.findElement(By.xpath("//span[@class = 'dcCalc_switch__icon-off']")).isDisplayed()) {
+                    checkBox.findElement(By.xpath(".//label")).click();
+                    try {
+                        wait.until(ExpectedConditions
+                                .visibilityOf(checkBox
+                                        .findElement(By
+                                                .xpath(".//span[@class = 'dcCalc_switch__icon-on'])"))));
+                    } catch (TimeoutException e) {
+                        checkBox.findElement(By.xpath(".//label")).click();
+                        wait.until(ExpectedConditions
+                                .visibilityOf(checkBox
+                                        .findElement(By
+                                                .xpath(".//span[@class = 'dcCalc_switch__icon-on'])"))));
+                    }
+                }
+                System.out.println(value + "true");
+                break;
+            case "false":
+                if (checkBox.findElement(By.xpath(".//span[@class = 'dcCalc_switch__icon-on'])")).isDisplayed()) {
+                    checkBox.findElement(By.xpath(".//label")).click();
+                    try {
+                        wait.until(ExpectedConditions
+                                .visibilityOf(checkBox
+                                        .findElement(By
+                                                .xpath("//span[@class = 'dcCalc_switch__icon-off']"))));
+                    } catch (TimeoutException e) {
+                        checkBox.findElement(By.xpath(".//label")).click();
+                        wait.until(ExpectedConditions
+                                .visibilityOf(checkBox
+                                        .findElement(By
+                                                .xpath("//span[@class = 'dcCalc_switch__icon-off']"))));
+                    }
+                }System.out.println(value + " false");
+                break;
+        }
     }
 
-    private String filtersField(int j, String str) {
+ /*   private String filtersField(int j, String str) {
         if ((j == 1) || (j == 2)) {
             str = str.concat(" \u20BD");
             StringBuffer sb = new StringBuffer(str.subSequence(0, str.length()));
@@ -60,7 +106,7 @@ public class DomClicPage extends BasePage {
         }
         if (j == 3) str = str.concat(" лет");
         return str;
-    }
+    }*/
 
     public WebElement sendString(String value) {
 
@@ -69,7 +115,7 @@ public class DomClicPage extends BasePage {
         return webelement;
     }
 
-    public void getList(String valeu) {
+   /* public void getList(String valeu) {
 
         new Actions(BaseStep.getDriver()).moveToElement(itemButton);
 
@@ -87,5 +133,20 @@ public class DomClicPage extends BasePage {
             }
         }
 
+    }*/
+
+    public void selectCreditReason(String valueOfOption) {
+        ((JavascriptExecutor) BaseStep.getDriver()).executeScript("arguments[0].scrollIntoView(false);", itemButton);
+        new Actions(BaseStep.getDriver()).moveToElement(itemButton).perform();
+        wait.until(ExpectedConditions.visibilityOf(itemButton));
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(itemButton)).click();
+        } catch (WebDriverException e) {
+            wait.until(ExpectedConditions.elementToBeClickable(itemButton)).click();
+        }
+        wait.until(ExpectedConditions.visibilityOf(
+                BaseStep.getDriver().findElement(By.xpath("//*[text()='" + valueOfOption + "']")))).click();
     }
+
+
 }

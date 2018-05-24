@@ -13,53 +13,34 @@ public class DomClicStep {
 
         switch (field) {
             case "Цель кредита":
-                domClicPage.getList(value);
+                domClicPage.selectCreditReason(value);
                 break;
             case "Стоимость недвижимости":
-               domClicPage.sendField(1,value);
+                domClicPage.sendField(domClicPage.estateCost, value);
                 break;
             case "Предварительный взнос":
-                domClicPage.sendField(2,value);
+                domClicPage.sendField(domClicPage.initialFee, value);
                 break;
             case "Срок кредита":
-                domClicPage.sendField(3,value);
+                domClicPage.sendField(domClicPage.creditTerm, value);
                 break;
             case "Скидка 0,3% при покупке квартиры на ДомКлик.":
-                domClicPage.sendCheck(4,value);
+                domClicPage.sendCheck("Скидка ");
                 break;
             case "Есть зарплатная карта Сбербанка":
-                domClicPage.sendCheck(5,value);
+                domClicPage.sendCheck(field);
                 break;
             case "Страхование жизни":
-                domClicPage.sendCheck(6,value);
+                domClicPage.sendCheck(field);
                 break;
             case "Электронная регистрация":
-                domClicPage.sendCheck(7,value);
+                domClicPage.sendCheck(field);
                 break;
             case "Молодая семья":
-                domClicPage.sendCheck(8,value);
+                domClicPage.sendCheck(field);
                 break;
             default:
                 Assert.fail("Нет такого поля заполнения");
         }
-    }
-
-    @Step
-    public String getValueInField(String field) {
-        String str = new String();
-        switch (field) {
-            case "сумма кредита":
-                break;
-            case "Ежемесячный платеж":
-                break;
-            case "необходимый доход":
-                break;
-            case "процентная ставка":
-                break;
-            default:
-                Assert.fail("Нет такого поля для получения значения");
-
-        }
-        return str;
     }
 }
